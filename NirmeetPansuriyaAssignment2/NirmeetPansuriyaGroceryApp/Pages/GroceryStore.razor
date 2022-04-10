@@ -1,0 +1,211 @@
+﻿@page "/store"
+
+<h1>The Best Grocery Store</h1>
+
+@if (ShouldWeShowTheInputs == "yes")
+{
+    <div class="food-input-wrapper">
+        <h2>Add Food Item to an isle</h2>
+
+        <div><input placeholder="Name" @bind="name" /></div>
+        <div><input placeholder="Brand name" @bind="brand" /></div>
+        <div>Quantity: <input type="number" @bind="quantity" /></div>
+        <div>Price: <input type="number" @bind="price" /></div>
+        <div>Isle Number: <input type="number" @bind="isleNumber" /></div>
+        <div>
+            <button @onclick="AddFoodItem">Add Food Item</button>
+        </div>
+    </div>
+}
+<ul>
+    @foreach (var isle in groceryIsles)
+    {
+        <li>@isle.IsleName</li>
+        <li>Isle Number @isle.IsleNumber</li>
+        <li>Food in this isle:
+            <ul>
+                @foreach (var foodItem in isle.FoodItemsList)
+                {
+                    <li>@foodItem.Name</li>
+                    <li>@foodItem.Brand</li>
+                    <li>@foodItem.Quantity
+                        @* <button class="btn btn-primary" @onclick="() => ChangeQuantity(foodItem, 1)">+</button>
+                        <button class="btn btn-primary" @onclick="() => ChangeQuantity(foodItem, -1)">-</button> *@
+                        @* Since foodItem.Quantity is an auto property, it's technically a method, not a variable.
+                            That means we can't use the ref keyword with it when we call our method
+                                
+                                ChangeIntegerQuantity(ref foodItem.Quantity, 1);   
+
+                            We instead have to make a temporary variable, which I called localQuantity, and set the value of that
+                            to be equal to the value that foodItem.Quantity returns. This makes an integer variable that we can
+                            pass by reference into the method, and then once the method is completed, we can use the value it changed
+                            to set the value of foodItem.Quantity.
+                         *@
+                        @* <button class="btn btn-primary" @onclick="() => {
+                            int localQuantity = foodItem.Quantity;
+                            ChangeIntegerQuantity(ref localQuantity, 1);
+                            foodItem.Quantity = localQuantity;
+                    }">+</button>
+                        <button class="btn btn-primary" @onclick="() => {
+                            int localQuantity = foodItem.Quantity;
+                            ChangeIntegerQuantity(ref localQuantity, -1);
+                            foodItem.Quantity = localQuantity;
+                    }">-</button> *@
+                    
+                    
+                    @* Alternatively, we could have the method return an integer and set our foodItem.Quantity to that returned value *@
+                    @* this is the best solution, no need for using call by reference unnecessarily *@
+                    <button class="btn btn-primary" @onclick="() => {
+                            foodItem.Quantity = GetNewQuantityValue(foodItem.Quantity, 1);
+                    }">+</button>
+                        <button class="btn btn-primary" @onclick="() => {
+                            foodItem.Quantity = GetNewQuantityValue(foodItem.Quantity, -1);
+                    }">-</button>
+                    </li>
+                    <li>@foodItem.Price</li>
+                    <li>----------------</li>
+                }
+            </ul>
+        </li>
+        <li>----------------</li>
+    }
+</ul>
+
+@code {
+    [Parameter]
+    public string ShouldWeShowTheInputs { get; set; } = "yes";
+
+    string name;
+    string brand;
+    int quantity;
+    decimal price;
+    int isleNumber;
+
+    @* private GroceryIsle BakingIsle = new GroceryIsle{
+        IsleNumber = 1,
+        IsleName = "Fruits and Veggies",
+        FoodItemsList = new List<FoodItem>{
+        new FoodItem{
+        Name = "Bananas",
+        Quantity = 10,
+        Price = 1.59M,
+        Brand = "Delmonte"
+        }
+        }
+        }; *@
+
+    private List<GroceryIsle> groceryIsles = new List<GroceryIsle>{
+new GroceryIsle{
+IsleNumber = 1,
+IsleName = "Fruits and Veggies",
+FoodItemsList = new List<FoodItem>{
+new FoodItem{
+Name = "Bananas",
+Quantity = 10,
+Price = 1.59M,
+Brand = "Delmonte"
+},
+new FoodItem{
+Name = "Potatoes",
+Quantity = 5,
+Price = 5.99M,
+Brand = "Ontario Local"
+},
+new FoodItem{
+Name = "Carrots",
+Quantity = 19,
+Price = 0.69M,
+Brand = "Fresh Veggies Inc."
+}
+}
+},
+new GroceryIsle{
+IsleNumber = 2,
+IsleName = "Baking",
+FoodItemsList = new List<FoodItem>{
+new FoodItem{
+Name = "Flour",
+Quantity = 3,
+Price = 10.99M,
+Brand = "Golden Temple"
+},
+new FoodItem{
+Name = "Sugar",
+Quantity = 11,
+Price = 3.99M,
+Brand = "Red Robin"
+},
+new FoodItem{
+Name = "Boxed Brownie Mix",
+Quantity = 14,
+Price = 2.59M,
+Brand = "Betty Crocker"
+}
+}
+},
+new GroceryIsle{
+IsleNumber = 3,
+IsleName = "Frozen Foods",
+FoodItemsList = new List<FoodItem>{
+new FoodItem{
+Name = "Frozen Pizza",
+Quantity = 4,
+Price = 6.59M,
+Brand = "Delicio"
+},
+new FoodItem{
+Name = "Yogurt",
+Quantity = 18,
+Price = 5.99M,
+Brand = "Activia"
+},
+new FoodItem{
+Name = "Ice Cream",
+Quantity = 8,
+Price = 8.79M,
+Brand = "Ben and Jerrys"
+}
+}
+},
+};
+
+    private void ChangeQuantity(FoodItem individualFoodItem, int amountToChange)
+    {
+        if (individualFoodItem.Quantity > 0 && individualFoodItem.Quantity < 20)
+        {
+            individualFoodItem.Quantity += amountToChange;
+        }
+    }
+    private void ChangeIntegerQuantity(ref int quantity, int amountToChange)
+    {
+        quantity += amountToChange;
+
+    }
+    private int GetNewQuantityValue(int quantity, int amountToChange)
+    {
+        return quantity + amountToChange;
+
+    }
+    private void AddFoodItem()
+    {
+        // isleNumber, name, brand, quantity, price
+        for (var i = 0; i < groceryIsles.Count; i++)
+        {
+            if (groceryIsles[i].IsleNumber == isleNumber)
+            {
+                groceryIsles[i].FoodItemsList.Add(new FoodItem
+                {
+                    Name = name,
+                    Quantity = quantity,
+                    Price = price,
+                    Brand = brand
+                });
+                name = "";
+                quantity = 0;
+                price = 0;
+                brand = "";
+                isleNumber = 0;
+            }
+        }
+    }
+}
